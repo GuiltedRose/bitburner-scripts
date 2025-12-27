@@ -1,4 +1,3 @@
-import { allHosts } from "lib/utils";
 import { babyBatcher, computeDelays } from "lib/math-utils";
 
 type Mode = "GROW" | "WEAKEN" | "HACK";
@@ -12,8 +11,8 @@ function allocCombined(
   // Tune weights any time. These just decide RAM split per host.
   const weights =
     mode === "WEAKEN" ? { h: 0.00, g: 0.10, w: 0.90 } :
-    mode === "GROW"   ? { h: 0.05, g: 0.70, w: 0.25 } :
-                        { h: 0.60, g: 0.20, w: 0.20 };
+      mode === "GROW" ? { h: 0.05, g: 0.70, w: 0.25 } :
+        { h: 0.60, g: 0.20, w: 0.20 };
 
   // Proportional allocation by RAM share
   let h = weights.h > 0 ? Math.floor((freeRam * weights.h) / ram.h) : 0;
@@ -52,30 +51,24 @@ export async function main(ns: NS) {
   ns.disableLog("getServerMaxRam");
   ns.disableLog("getServerUsedRam");
 
-  const spacer = 200; // passed into your computeDelays()
+  const spacer = 200; // passed into computeDelays()
   const tick = 250;   // controller loop frequency
 
   while (true) {
-    // Optional: if you want the raw host list for debugging/future logic
-    // (Not required for execution because bb.caps already contains runner hosts)
-    const runners = allHosts(ns)
-      .filter(h => h !== "home")
-      .filter(h => ns.hasRootAccess(h))
-      .filter(h => ns.getServerMaxRam(h) > 0);
 
-    // Your math layer: pick target, compute caps, recommend op, etc.
+    // math layer: pick target, compute caps, recommend op, etc.
     const bb = babyBatcher(ns);
     const target = bb.target;
 
-    // Your delay math function
+    // delay math function
     const { dH, dW, dG } = computeDelays(ns, target, spacer);
 
-    // (Optional) sanity: ensure bb.caps aligns with runners list
-    // If you don’t care, delete this block.
-    // const runnerSet = new Set(runners);
-    // for (const c of bb.caps) if (!runnerSet.has(c.host)) ns.tprint(`WARN: cap host not in runners: ${c.host}`);
-
-    // For each runner host: allocate combined H/G/W threads that fit ON THAT HOST
+    /* 
+    (Optional) sanity: ensure bb.caps aligns with runners list
+     If you don’t care, delete this block.
+     const runnerSet = new Set(runners);
+     for (const c of bb.caps) if (!runnerSet.has(c.host)) ns.tprint(`WARN: cap host not in runners: ${c.host}`);
+    For each runner host: allocate combined H/G/W threads that fit ON THAT HOST */
     for (const c of bb.caps) {
       const host = c.host;
       const freeRam = c.freeRam;
@@ -90,7 +83,7 @@ export async function main(ns: NS) {
       if (h <= 0 && g <= 0 && w <= 0) continue;
 
       // Start the three operations on the SAME host, but delayed so they align
-      // NOTE: this requires your workers to accept (target, delay)
+      // NOTE: this requires workers to accept (target, delay)
       if (h > 0 && !ns.isRunning(bb.scripts.hack, host, target, dH)) {
         ns.exec(bb.scripts.hack, host, h, target, dH);
       }
