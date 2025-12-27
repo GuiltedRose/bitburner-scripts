@@ -1,4 +1,4 @@
-import { largestPrimeFactor } from "lib/utils";
+import { largestPrimeFactor } from "lib/contracts";
 
 export async function main(ns: NS) {
   const host = String(ns.args[0] ?? "");

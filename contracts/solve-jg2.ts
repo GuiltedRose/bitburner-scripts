@@ -1,4 +1,4 @@
-import { minJumpsGameII } from "lib/utils";
+import { minJumpsGameII } from "lib/contracts";
 
 export async function main(ns: NS) {
   const host = String(ns.args[0] ?? "");

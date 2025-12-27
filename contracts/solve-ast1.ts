@@ -1,4 +1,4 @@
-import { stockTraderI } from "lib/utils";
+import { stockTraderI } from "lib/contracts";
 
 export async function main(ns: NS) {
   const host = String(ns.args[0] ?? "");

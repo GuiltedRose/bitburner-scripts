@@ -1,4 +1,4 @@
-import { mergeOverlappingIntervals } from "lib/utils";
+import { mergeOverlappingIntervals } from "lib/contracts";
 
 export async function main(ns: NS) {
   const host = String(ns.args[0] ?? "");
