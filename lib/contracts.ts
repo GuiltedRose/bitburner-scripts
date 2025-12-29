@@ -102,25 +102,47 @@ export function generateIPAddresses(s: string): string[] {
   const res: string[] = [];
   const n = s.length;
 
-  function okOctet(str: string): boolean {
-    if (str.length === 0 || str.length > 3) return false;
-    if (str.length > 1 && str[0] === "0") return false;
-    const v = Number(str);
-    return v >= 0 && v <= 255;
+  // Quick impossible-length filter: 4 octets => 4..12 digits
+  if (n < 4 || n > 12) return res;
+
+  // Validate s[start:end) as an IP octet, without slicing/parsing.
+  function okOctetRange(start: number, end: number): boolean {
+    const len = end - start;
+    if (len <= 0 || len > 3) return false;
+
+    // Leading zero rule
+    if (len > 1 && s.charCodeAt(start) === 48) return false;
+
+    let v = 0;
+    for (let i = start; i < end; i++) {
+      const c = s.charCodeAt(i) - 48; // '0' -> 0
+      if (c < 0 || c > 9) return false; // non-digit guard
+      v = v * 10 + c;
+    }
+    return v <= 255;
   }
 
-  // Try all split positions i,j,k for 4 parts:
-  // [0:i), [i:j), [j:k), [k:n)
+  // Iterate split positions with tight bounds
   for (let i = 1; i <= 3 && i < n; i++) {
     for (let j = i + 1; j <= i + 3 && j < n; j++) {
       for (let k = j + 1; k <= j + 3 && k < n; k++) {
-        const a = s.slice(0, i);
-        const b = s.slice(i, j);
-        const c = s.slice(j, k);
-        const d = s.slice(k);
+        // d length must be 1..3
+        if (n - k > 3) continue;
 
-        if (okOctet(a) && okOctet(b) && okOctet(c) && okOctet(d)) {
-          res.push(`${a}.${b}.${c}.${d}`);
+        // Validate ranges first (no allocations)
+        if (
+          okOctetRange(0, i) &&
+          okOctetRange(i, j) &&
+          okOctetRange(j, k) &&
+          okOctetRange(k, n)
+        ) {
+          // Only now slice/build output
+          res.push(
+            s.slice(0, i) + "." +
+            s.slice(i, j) + "." +
+            s.slice(j, k) + "." +
+            s.slice(k)
+          );
         }
       }
     }
@@ -128,6 +150,7 @@ export function generateIPAddresses(s: string): string[] {
 
   return res;
 }
+
 
 export function uniquePathsGridI(rows: number, cols: number): number {
   const down = rows - 1;
