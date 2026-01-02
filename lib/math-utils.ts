@@ -52,8 +52,8 @@ type BabyBatch = {
   target: string;
 
   // scripts + their ram costs (so controller doesn't re-query)
-  scripts: { hack: string; grow: string; weaken: string };
-  scriptRam: { hack: number; grow: number; weaken: number };
+  scripts: { hack1: string; grow1: string; weaken1: string };
+  scriptRam: { hack1: number; grow1: number; weaken1: number };
 
   // runner capacity map (per host)
   caps: { host: string; freeRam: number; h: number; g: number; w: number }[];
@@ -82,13 +82,13 @@ export function babyBatcher(ns: NS): BabyBatch {
   const target = findTarget(ns);
   const caps = myRamUsage(ns);
 
-  const hack = "workers/hack.ts";
-  const grow = "workers/grow.ts";
-  const weaken = "workers/weaken.ts";
+  const hack1 = "workers/hack.ts";
+  const grow1 = "workers/grow.ts";
+  const weaken1 = "workers/weaken.ts";
 
-  const hRam = ns.getScriptRam(hack);
-  const gRam = ns.getScriptRam(grow);
-  const wRam = ns.getScriptRam(weaken);
+  const hRam = ns.getScriptRam(hack1);
+  const gRam = ns.getScriptRam(grow1);
+  const wRam = ns.getScriptRam(weaken1);
 
   // snapshot target state
   const money = ns.getServerMoneyAvailable(target);
@@ -133,8 +133,8 @@ export function babyBatcher(ns: NS): BabyBatch {
 
   return {
     target,
-    scripts: { hack, grow, weaken },
-    scriptRam: { hack: hRam, grow: gRam, weaken: wRam },
+    scripts: { hack1, grow1, weaken1 },
+    scriptRam: { hack1: hRam, grow1: gRam, weaken1: wRam },
     caps,
 
     money,
@@ -167,4 +167,3 @@ export function computeDelays(ns: NS, target: string, spacer = 200) {
 
   return { dH, dW, dG, spacer, T, tH, tW, tG };
 }
-
